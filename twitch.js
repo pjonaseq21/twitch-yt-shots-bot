@@ -6,11 +6,9 @@ require('dotenv').config();
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
-const { spawn } = require('child_process');
-const path = require('path');
 
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
+const clientId = process.env.CLIENT_ID; // zastąp swoją wartością
+const clientSecret = process.env.CLIENT_SECRET; // zastąp swoją wartością
 const grantType = 'client_credentials';
 const scope = 'user:read:email';
 const language = 'pl';
@@ -81,14 +79,16 @@ async function getPolishChessClips() {
     console.error('Błąd autoryzacji lub pobierania danych:', error);
   }
 }
-async function downloadTwitchClip(clipUrl, clientId) {
+
+ 
+async function downloadAndConvertToMp4(url) {
     try {
       // Pobranie informacji o klipie z Twitch API
-      const accessToken = await authorize();
-      const response = await axios.get(`https://api.twitch.tv/helix/clips?id=${clipUrl.replace('https://clips.twitch.tv/', '')}`, {
+      const clipId = url.split('/').pop();
+      const response = await axios.get(`https://api.twitch.tv/helix/clips?id=${clipId}`, {
         headers: {
-          'Client-ID': clientId,
-          'Authorization': `Bearer ${accessToken}`,
+          'Client-ID': process.env.CLIENT_ID,
+          'Authorization': `Bearer ${await authorize()}`,
         },
       });
   
@@ -101,24 +101,14 @@ async function downloadTwitchClip(clipUrl, clientId) {
       });
   
       // Zapisanie pliku klipu
-      const clipFileName = 'clip.mp4';
+      const clipFileName = 'clip2.mp4';
       const writeStream = fs.createWriteStream(clipFileName);
       clipFileResponse.data.pipe(writeStream);
   
-      // Konwersja pliku do formatu MP4 z wykorzystaniem ffmpeg
-      ffmpeg(writeStream)
-        .outputOptions('-c:v', 'copy')
-        .outputOptions('-bsf:a', 'aac_adtstoasc')
-        .outputOptions('-movflags', 'faststart')
-        .on('error', (err) => {
-          console.error('Błąd podczas konwersji:', err);
-        })
-        .on('end', () => {
-          console.log('Konwersja zakończona!');
-        })
-        .pipe(fs.createWriteStream('clip.mp4'));
+     
     } catch (error) {
       console.error('Błąd podczas pobierania danych z API Twitch:', error);
     }
   }
-getPolishChessClips()
+  
+  downloadAndConvertToMp4("https://www.twitch.tv/xntentacion/clip/BenevolentJollyRaccoonHotPokket-4kP2cGRFQ4vXsOz_")
