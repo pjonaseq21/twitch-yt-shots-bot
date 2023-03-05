@@ -48,7 +48,7 @@ async function getPolishChessClips() {
     const clipResponse = await axios.get('https://api.twitch.tv/helix/clips', {
       params: {
         game_id: game_id,
-        first: 10,
+        first: 15,
         started_at: moment().subtract(7, 'days').toISOString(),
         language: language,
       },
@@ -65,14 +65,22 @@ async function getPolishChessClips() {
 
     // Filtracja klipów, które mają ustawione język na "pl"
     const polishChessClips = clipResponse.data.data.filter(clip => clip.language === language);
+    console.log(polishChessClips.length)
 
-    console.log('Klipy o szachach z Polski z tego tygodnia:', polishChessClips);
+    //Tablica na linki do filmów
+    let arrayClips = []
+    for(let i = 0; i<polishChessClips.length;i++){
+      arrayClips.push(polishChessClips[i].url)
+    }
+   // console.log('Vody: ',arrayClips)
+  //  console.log('Klipy o szachach z Polski z tego tygodnia:', polishChessClips);
     
     fs.writeFile('polish_chess_clips.json', JSON.stringify(polishChessClips), err => {
       if (err) {
         console.error('Błąd zapisu pliku:', err);
         return;
       }
+      downloadAndConvertToMp4(arrayClips)
       console.log('Lista klipów zapisana do pliku polish_chess_clips.json');
     });
   } catch (error) {
@@ -83,27 +91,33 @@ async function getPolishChessClips() {
  
 async function downloadAndConvertToMp4(url) {
     try {
-      // Pobranie informacji o klipie z Twitch API
-      const clipId = url.split('/').pop();
+      for(let i = 0;i<url[i].length;i++){
+      const clipId = url[i].split('/').pop();
+      console.log(clipId)
       const response = await axios.get(`https://api.twitch.tv/helix/clips?id=${clipId}`, {
         headers: {
           'Client-ID': process.env.CLIENT_ID,
           'Authorization': `Bearer ${await authorize()}`,
         },
       });
+          // Pobranie URL do pliku klipu
+          const clipFileUrl = response.data.data[0].thumbnail_url.replace('-preview-480x272.jpg', '.mp4');
   
-      // Pobranie URL do pliku klipu
-      const clipFileUrl = response.data.data[0].thumbnail_url.replace('-preview-480x272.jpg', '.mp4');
+          // Pobranie pliku klipu
+          const clipFileResponse = await axios.get(clipFileUrl, {
+            responseType: 'stream',
+          });
+      
+          // Zapisanie pliku klipu
+          const clipFileName = `./vods/vod${i}.mp4`;
+          const writeStream = fs.createWriteStream(clipFileName);
+          clipFileResponse.data.pipe(writeStream);
+          if (i==url.length){
+            console.log("Videos created")
+            break
+          }
+    }
   
-      // Pobranie pliku klipu
-      const clipFileResponse = await axios.get(clipFileUrl, {
-        responseType: 'stream',
-      });
-  
-      // Zapisanie pliku klipu
-      const clipFileName = 'clip2.mp4';
-      const writeStream = fs.createWriteStream(clipFileName);
-      clipFileResponse.data.pipe(writeStream);
   
      
     } catch (error) {
@@ -111,4 +125,5 @@ async function downloadAndConvertToMp4(url) {
     }
   }
   
-  downloadAndConvertToMp4("https://www.twitch.tv/xntentacion/clip/BenevolentJollyRaccoonHotPokket-4kP2cGRFQ4vXsOz_")
+//  downloadAndConvertToMp4("https://www.twitch.tv/xntentacion/clip/BenevolentJollyRaccoonHotPokket-4kP2cGRFQ4vXsOz_")
+getPolishChessClips()
