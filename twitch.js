@@ -72,8 +72,7 @@ async function getPolishChessClips() {
     for(let i = 0; i<polishChessClips.length;i++){
       arrayClips.push(polishChessClips[i].url)
     }
-   // console.log('Vody: ',arrayClips)
-  //  console.log('Klipy o szachach z Polski z tego tygodnia:', polishChessClips);
+
     
     fs.writeFile('polish_chess_clips.json', JSON.stringify(polishChessClips), err => {
       if (err) {
@@ -124,6 +123,13 @@ async function downloadAndConvertToMp4(url) {
       console.error('Błąd podczas pobierania danych z API Twitch:', error);
     }
   }
-  
-//  downloadAndConvertToMp4("https://www.twitch.tv/xntentacion/clip/BenevolentJollyRaccoonHotPokket-4kP2cGRFQ4vXsOz_")
-getPolishChessClips()
+  function montageVideos(){
+    fs.readdir(__dirname +"/vods",(err,files)=>{
+      if(err){
+        console.log(err)
+      }
+        console.log(files)
+    })
+  } //ffmpegffmpeg -i "vod0.mp4" -i "vod1.mp4" -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1" -c:v libx264 -crf 23 -preset veryfast "nazwa_nowego_pliku.mp4" - przykladowa skladnia do montowania filmu w cmd
+
+  montageVideos()
