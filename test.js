@@ -1,57 +1,43 @@
-const {google} = require("googleapis")
-const fs = require("fs")
-const CLIENT_ID = '303317408228-1o558f4eucvljsurmg8b7t9sk7hplrip.apps.googleusercontent.com';
-const CLIENT_SECRET = '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';
-const REFRESH_TOKEN = 'YOUR_REFRESH_TOKEN_HERE';
-const  REDIRECT_URI = 'https://facebook.com'
-const oauth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-  REDIRECT_URI,
-);
+const { google } = require('googleapis');
+const readline = require('readline');
 
+const CLIENT_ID = '';
+const CLIENT_SECRET = '';
+const REDIRECT_URI = 'http://localhost:8080/oauth2callback';
+const SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl'];
 
-  oauth2Client.setCredentials({
-    refresh_token: REFRESH_TOKEN
+const auth = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+function getAccessToken() {
+  return new Promise((resolve, reject) => {
+    const authUrl = auth.generateAuthUrl({
+      access_type: 'offline',
+      scope: SCOPES,
+    });
+
+    console.log(`Otwórz poniższy link i zezwól na dostęp do swojego konta Google:`);
+    console.log(authUrl);
+
+    rl.question('Podaj kod autoryzacyjny: ', (code) => {
+      auth.getToken(code, (err, tokens) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(tokens.access_token);
+        }
+        rl.close();
+      });
+    });
   });
-const youtube = google.youtube({
-    version: 'v3',
-    auth: oauth2Client
-  });
+}
 
-
-
-  const videoData = {
-    snippet: {
-      title: 'Tytuł twojego filmu',
-      description: 'Opis twojego filmu',
-      tags: ['Tag 1', 'Tag 2'],
-      categoryId: '22'
-    },
-    status: {
-      privacyStatus: 'private',
-      selfDeclaredMadeForKids: false 
-    }
-  };
-
-
-  const videoPath = './vods/vod0.mp4';
-const videoFileSize = fs.statSync(videoPath).size;
-const videoStream = fs.createReadStream(videoPath);
-
-
-youtube.videos.insert({
-    part: 'snippet,status',
-    notifySubscribers: false,
-    media: {
-      body: videoStream
-    },
-    requestBody: videoData,
-    mediaSize: videoFileSize,
-  }, (err, res) => {
-    if (err) {
-      console.error('Błąd:', err);
-    } else {
-      console.log('Film został dodany!');
-    }
-  });
+getAccessToken().then((accessToken) => {
+  console.log(`Otrzymano token dostępu: ${accessToken}`);
+}).catch((err) => {
+  console.error('Błąd podczas pobierania tokena dostępu:', err);
+});
