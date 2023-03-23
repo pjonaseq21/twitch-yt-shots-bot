@@ -142,17 +142,17 @@ async function downloadAndConvertToMp4(urls) {
 }
 
 
-  function montageVideos(){
+ async function montageVideos(){
     let vodsNameList = []
-    fs.readdir(__dirname +"/vods",(err,files)=>{
+     fs.readdir(__dirname +"/vods",(err,files)=>{
       if(err){
         console.log(err) 
       }
-      files.forEach((x)=>{
-        vodsNameList.push(x)
+       files.forEach((x)=>{
+         vodsNameList.push(x)
       })
-      exec(`ffmpeg -i "./vods/vod0.mp4" -i "./vods/vod1.mp4" -i "./vods/vod2.mp4" -i "./vods/vod3.mp4" -i "./vods/vod4.mp4" -i "./vods/vod5.mp4" -i "./vods/vod6.mp4" -i "./vods/vod7.mp4" -i "./vods/vod8.mp4" -i "./vods/vod9.mp4" -filter_complex "[0:v][0:a][1:v][1:a][2:v][2:a][3:v][3:a][4:v][4:a][5:v][5:a][6:v][6:a][7:v][7:a][8:v][8:a][9:v][9:a]concat=n=10:v=1:a=1" -c:v libx264 -crf 23 -preset veryfast "test.mp4"`, (error, stdout, stderr) => {
-        if (error) {
+       exec(`ffmpeg -i "./vods/vod0.mp4" -i "./vods/vod1.mp4" -i "./vods/vod2.mp4" -i "./vods/vod3.mp4" -i "./vods/vod4.mp4" -i "./vods/vod5.mp4" -i "./vods/vod6.mp4" -i "./vods/vod7.mp4" -i "./vods/vod8.mp4" -i "./vods/vod9.mp4" -filter_complex "[0:v][0:a][1:v][1:a][2:v][2:a][3:v][3:a][4:v][4:a][5:v][5:a][6:v][6:a][7:v][7:a][8:v][8:a][9:v][9:a]concat=n=10:v=1:a=1" -c:v libx264 -crf 23 -preset veryfast "test.mp4"`, (error, stdout, stderr) => {
+          if (error) {
           console.error(`Błąd podczas wykonywania polecenia: ${error.message}`);
           return;
         }
@@ -166,6 +166,9 @@ async function downloadAndConvertToMp4(urls) {
     })
   } //ffmpegffmpeg -i "vod0.mp4" -i "vod1.mp4" -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1" -c:v libx264 -crf 23 -preset veryfast "nazwa_nowego_pliku.mp4" - przykladowa skladnia do montowania filmu w cmd
 
+(async () => {
+   await getPolishChessClips()
+await montageVideos()
+ await pupet()
+})();
 
-
-pupet()
