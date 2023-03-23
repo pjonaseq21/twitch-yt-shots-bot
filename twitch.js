@@ -1,5 +1,6 @@
 const axios = require('axios');
 const moment = require("moment")
+const {pupet} = require("./pupeter")
 const fs = require("fs")
 require('dotenv').config();
 const { exec } = require("child_process");
@@ -7,7 +8,6 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
 let arrayTitels = []
-
 const clientId = process.env.CLIENT_ID; // zastąp swoją wartością
 const clientSecret = process.env.CLIENT_SECRET; // zastąp swoją wartością
 const grantType = 'client_credentials';
@@ -166,4 +166,6 @@ async function downloadAndConvertToMp4(urls) {
     })
   } //ffmpegffmpeg -i "vod0.mp4" -i "vod1.mp4" -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1" -c:v libx264 -crf 23 -preset veryfast "nazwa_nowego_pliku.mp4" - przykladowa skladnia do montowania filmu w cmd
 
-montageVideos()
+
+
+pupet()
